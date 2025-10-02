@@ -88,6 +88,11 @@ object OPFFunct6 extends ChiselEnum {
   val illegal = Value(0x40.U)
 }
 
+object OPMExtFunct6 extends ChiselEnum {
+  val ldotu = Value(0x26.U)
+  val ldots = Value(0x27.U)
+}
+
 trait HasVectorConsts {
   def mopUnit      = 0.U(2.W)
   def mopUnordered = 1.U(2.W)
@@ -107,6 +112,7 @@ trait HasVectorConsts {
   def opcLoad   = "b0000111".U
   def opcStore  = "b0100111".U
   def opcVector = "b1010111".U
+  def opcExtra  = "b1110111".U
 
   def OPIVV = "b000".U(3.W)
   def OPFVV = "b001".U(3.W)

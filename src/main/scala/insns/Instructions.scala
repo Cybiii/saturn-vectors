@@ -8,7 +8,7 @@ import freechips.rocketchip.subsystem._
 import freechips.rocketchip.rocket._
 import freechips.rocketchip.rocket.constants._
 import freechips.rocketchip.util._
-import saturn.common.{OPIFunct6, OPMFunct6, OPFFunct6, VectorConsts}
+import saturn.common.{OPIFunct6, OPMFunct6, OPFFunct6, OPMExtFunct6, VectorConsts}
 
 class OPIVVInstruction(base: OPIInstruction) extends VectorInstruction {
   val props = base.props ++ Seq(F3(VectorConsts.OPIVV), ReadsVS1.Y)
@@ -237,3 +237,7 @@ object OPMACC      extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opma
 object OPMVIN      extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opmvin)     , ReadsVS1.N, ReadsVS2.Y, WritesVD.N) }
 object OPMVINBCAST extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opmvinbcast), ReadsVS1.N, ReadsVS2.Y, WritesVD.N) }
 object OPMVOUT     extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opmvout)    , ReadsVS1.N, ReadsVS2.N, WritesVD.Y) }
+
+// Batched dot product instructions
+object LDOTU extends OPMInstruction    { val props = Seq(F6(OPMExtFunct6.ldotu) , EXT.Y) }
+object LDOTS extends OPMInstruction    { val props = Seq(F6(OPMExtFunct6.ldots) , EXT.Y) }
