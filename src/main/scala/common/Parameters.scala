@@ -384,6 +384,11 @@ case class VectorParams(
     saturn.insns.OPMVINBCAST.VX,
     saturn.insns.OPMVOUT.VX)
   def bdotInsns = Seq(
+    saturn.insns.DOTSET.VV,
+    saturn.insns.DOTSETZERO.VV,
+    saturn.insns.DOTSETBC.VV,
+    saturn.insns.DOTSETZEROBC.VV,
+    saturn.insns.DOTWB.VV,
     saturn.insns.QLDOTUA.VV,
     saturn.insns.QLDOTSA.VV,
     saturn.insns.QBDOTUA.VV,
@@ -411,6 +416,7 @@ trait HasVectorParams extends HasVectorConsts { this: HasCoreParameters =>
   def mLenOffBits = log2Ceil(mLenB)
 
   def useOpu = vParams.useOpu
+  def useBDot = vParams.useBDot
 
   def opuParams = OPUParameters(8, 8, 32, 33, 2)
 
@@ -421,7 +427,7 @@ trait HasVectorParams extends HasVectorConsts { this: HasCoreParameters =>
   def vrfBankBits = log2Ceil(vParams.vrfBanking)
   def lsiqIdBits = log2Ceil(vParams.vliqEntries.max(vParams.vsiqEntries))
   val debugIdSz = 16
-  def nRelease = vParams.issStructure.generate(vParams).map(_.seqs.size).reduce(_+_) + 2 + (if (useOpu) 1 else 0) // load/stores/opu
+  def nRelease = vParams.issStructure.generate(vParams).map(_.seqs.size).reduce(_+_) + 2 + (if (useOpu) 1 else 0) + (if (useBDot) 1 else 0) // load/stores/opu
 
   def getEgId(vreg: UInt, eidx: UInt, eew: UInt, bitwise: Bool): UInt = {
     val base = vreg << log2Ceil(egsPerVReg)

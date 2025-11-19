@@ -89,6 +89,8 @@ object OPFFunct6 extends ChiselEnum {
 }
 
 object OPMExtFunct6 extends ChiselEnum {
+  val dotset  = Value(0x00.U)
+  val dotwb   = Value(0x01.U)
   val fwldota = Value(0x24.U)
   val qldotua = Value(0x26.U) // Also used for fqldota
   val qldotsa = Value(0x27.U) // Also used for fqldota.alt

@@ -239,7 +239,12 @@ object OPMVINBCAST extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opmv
 object OPMVOUT     extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opmvout)    , ReadsVS1.N, ReadsVS2.N, WritesVD.Y) }
 
 // Batched dot product instructions
-object QLDOTUA extends OPIInstruction    { val props = Seq(F6(OPMExtFunct6.qldotua), EXT.Y, BDotSigned.N, BDotFP.N, BDotBatched.N, BDotWiden(2.U(2.W))) }
-object QLDOTSA extends OPIInstruction    { val props = Seq(F6(OPMExtFunct6.qldotsa), EXT.Y, BDotSigned.Y, BDotFP.N, BDotBatched.N, BDotWiden(2.U(2.W))) }
-object QBDOTUA extends OPIInstruction    { val props = Seq(F6(OPMExtFunct6.qbdotua), EXT.Y, BDotSigned.N, BDotFP.N, BDotBatched.Y, BDotWiden(2.U(2.W))) }
-object QBDOTSA extends OPIInstruction    { val props = Seq(F6(OPMExtFunct6.qbdotsa), EXT.Y, BDotSigned.Y, BDotFP.N, BDotBatched.Y, BDotWiden(2.U(2.W))) }
+object DOTSET       extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotset) , EXT.Y, BDotSet.Y, BDotSetZero.N, BDotSetBC.N, RS1(BitPat("b???00"))) }
+object DOTSETZERO   extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotset) , EXT.Y, BDotSet.Y, BDotSetZero.Y, BDotSetBC.N, RS1(BitPat("b???01"))) }
+object DOTSETBC     extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotset) , EXT.Y, BDotSet.Y, BDotSetZero.N, BDotSetBC.Y, RS1(BitPat("b???10"))) }
+object DOTSETZEROBC extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotset) , EXT.Y, BDotSet.Y, BDotSetZero.Y, BDotSetBC.Y, RS1(BitPat("b???11"))) }
+object DOTWB        extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotwb)  , EXT.Y, BDotWB.Y, BDotSetZero.Y) }
+object QLDOTUA      extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.qldotua), EXT.Y, BDotSigned.N, BDotFP.N, BDotBatched.N, BDotWiden(2.U(2.W))) }
+object QLDOTSA      extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.qldotsa), EXT.Y, BDotSigned.Y, BDotFP.N, BDotBatched.N, BDotWiden(2.U(2.W))) }
+object QBDOTUA      extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.qbdotua), EXT.Y, BDotSigned.N, BDotFP.N, BDotBatched.Y, BDotWiden(2.U(2.W))) }
+object QBDOTSA      extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.qbdotsa), EXT.Y, BDotSigned.Y, BDotFP.N, BDotBatched.Y, BDotWiden(2.U(2.W))) }

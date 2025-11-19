@@ -59,7 +59,7 @@ class VectorBackend(implicit p: Parameters) extends CoreModule()(p) with HasVect
   val vxus = xissParams.map(_.seqs.map(s => Module(new ExecutionUnit(s.fus, s.name)).suggestName(s"vxu${s.name}")))
   val flat_vxus = vxus.flatten
   val vopu = Option.when(useOpu) { Module(new OuterProductUnit) }
-  val vbdot = Option.when(true) { Module(new BDotUnit(2, 1)) } // TODO: Add config option
+  val vbdot = Option.when(useBDot) { Module(new BDotUnit(2, 1)) }
   val maxPipeDepth = (flat_vxus.map(_.maxPipeDepth) ++ vopu.map(_.yDim + 2)).max
 
 
@@ -70,7 +70,7 @@ class VectorBackend(implicit p: Parameters) extends CoreModule()(p) with HasVect
   ))
 
   val vos = Option.when(useOpu) { Module(new OuterProductSequencer) }
-  val vbs = Option.when(true) { Module(new BDotSequencer(2, 1)) } // TODO: Add config option
+  val vbs = Option.when(useBDot) { Module(new BDotSequencer(2, 1)) }
   val all_supported_insns = xissParams.map(_.insns).flatten ++ vos.map(_.opu_insns).getOrElse(Nil) ++ vbs.map(_.bdot_insns).getOrElse(Nil)
   val vps = Module(new SpecialSequencer(all_supported_insns))
 
@@ -106,7 +106,7 @@ class VectorBackend(implicit p: Parameters) extends CoreModule()(p) with HasVect
     IssueGroup(vpissq, Seq(vps)),
   ) ++ (vxissqs.zip(vxs).zipWithIndex.map { case ((q, seqs), i) =>
     val s = if (i == 0 && useOpu) (seqs ++ vos) else seqs
-    IssueGroup(q, s ++ vbs)
+    if (useBDot) IssueGroup(q, s ++ vbs) else IssueGroup(q, s)
   })
 
   // ======================================
@@ -406,8 +406,6 @@ class VectorBackend(implicit p: Parameters) extends CoreModule()(p) with HasVect
     vbs.get.io.iss.ready := vbdot.io.op.ready
     vbdot.io.op.valid := vbs.get.io.iss.valid
     vbdot.io.op.bits := vbs.get.io.iss.bits
-    vbs.get.io.writeback_op.ready := vbdot.io.writeback_op.ready
-    vbdot.io.writeback_op.valid := vbs.get.io.writeback_op.valid
     vbdot.io.rvs1_data := vrf.io.vxs(vbs_index).rvs1.resp
     vbdot.io.rvs2_data := vrf.io.vxs(vbs_index).rvs2.resp
     vrf.io.batch_read_vs2 := vbs.get.io.batch_read_vs2
@@ -606,6 +604,9 @@ class VectorBackend(implicit p: Parameters) extends CoreModule()(p) with HasVect
   vxs.flatten.foreach(xs => clearVat(xs.io.iss.fire && xs.io.iss.bits.tail, xs.io.iss.bits.vat))
   vos.foreach { vos =>
     clearVat(vos.io.iss.fire && vos.io.tail, vos.io.vat)
+  }
+  vbs.foreach { vbs =>
+    clearVat(vbs.io.tail, vbs.io.vat) // iss.fire intentionally left out, tail includes it already
   }
 
   // Signalling to frontend

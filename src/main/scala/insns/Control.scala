@@ -102,6 +102,10 @@ object FPSgnj            extends NDefaultInstructionField
 object FPSpecRM          extends XDefaultInstructionField { override val width = 3 }
 
 // BDot control
+object BDotSet           extends NDefaultInstructionField
+object BDotWB            extends NDefaultInstructionField
+object BDotSetZero       extends XDefaultInstructionField
+object BDotSetBC         extends XDefaultInstructionField
 object BDotFP            extends XDefaultInstructionField
 object BDotSigned        extends XDefaultInstructionField
 object BDotBatched       extends XDefaultInstructionField
