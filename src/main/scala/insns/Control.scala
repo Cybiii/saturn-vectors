@@ -110,3 +110,6 @@ object BDotFP            extends XDefaultInstructionField
 object BDotSigned        extends XDefaultInstructionField
 object BDotBatched       extends XDefaultInstructionField
 object BDotWiden         extends XDefaultInstructionField { override val width = 2 }
+
+// OPU control
+object OPFP8             extends NDefaultInstructionField

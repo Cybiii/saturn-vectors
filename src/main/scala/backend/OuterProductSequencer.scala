@@ -51,6 +51,7 @@ class OuterProductSequencer(implicit p: Parameters) extends Sequencer[OuterProdu
   val mvin_bcast = Reg(Bool())
   val mvout = Reg(Bool())
   val macc = Reg(Bool())
+  val macc_fp8 = Reg(Bool())
 
   val scalar_row_idx = inst.rs1_data
   val scalar_cluster_row_idx = (scalar_row_idx >> log2Ceil(clusterYdim))(log2Ceil(yDim)-1,0)
@@ -90,9 +91,11 @@ class OuterProductSequencer(implicit p: Parameters) extends Sequencer[OuterProdu
     rvs1_mask     := Mux(dis_inst.renv1             , FillInterleaved(egsPerVReg, dis_vs1_arch_mask), 0.U)
     rvs2_mask     := Mux(dis_inst.renv2             , FillInterleaved(egsPerVReg, dis_vs2_arch_mask), 0.U)
     val funct6 = OPMFunct6(dis_inst.funct6)
+    val fp_funct6 = OPFFunct6(dis_inst.funct6)
+    macc_fp8 :=  fp_funct6 === OPFFunct6.opfmacc
+    macc :=  (funct6 === OPMFunct6.opmacc) || (fp_funct6 === OPFFunct6.opfmacc)
     mvin := funct6 === OPMFunct6.opmvin
     mvout :=  funct6 === OPMFunct6.opmvout
-    macc :=  funct6 === OPMFunct6.opmacc
     mvin_bcast :=  funct6 === OPMFunct6.opmvinbcast
     col_idx := 0.U
     row_idx := 0.U
@@ -182,8 +185,9 @@ class OuterProductSequencer(implicit p: Parameters) extends Sequencer[OuterProdu
   io.iss.bits.col_idx.foreach(_ := Mux(io.iss.fire, col_idx, 0.U))
   io.iss.bits.macc.foreach(_ := io.iss.fire && macc)
   io.iss.bits.mvin_bcast.foreach(_ := io.iss.fire && mvin_bcast)
+  io.iss.bits.fp8.foreach(_ := io.iss.fire && macc_fp8)
+  io.iss.bits.altfmt.foreach(_ := inst.vconfig.vtype.altfmt)
   io.iss.bits.clock_enable := valid || mvout_valids =/= 0.U
-  io.iss.bits.altfmt := inst.vconfig.vtype.altfmt
 
   // for a non-bcast mvin, only the specific row of clusters gets mvin set
   for (i <- 0 until yDim) {
