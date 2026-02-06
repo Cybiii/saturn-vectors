@@ -5,11 +5,11 @@
 #define COUNT 128
 #define SPECIAL_COUNT 20
 
-void test(size_t nsize, size_t wsize, char *name, double min, double max, double sn_min, double sn_max, mx_generator gen, mx_op_binary op) {
+void test(size_t isize, size_t osize, char *name, double min, double max, double sn_min, double sn_max, mx_generator gen, mx_op_binary op) {
 
-	uint64_t vals_a[COUNT];
-	uint64_t vals_b[COUNT];
-	uint64_t vals_out[COUNT];
+	fp_t vals_a[COUNT];
+	fp_t vals_b[COUNT];
+	fp_t vals_out[COUNT];
 
 	for (size_t i = 0; i < COUNT; i ++) {
 		vals_a[i] = gen(GM_RAND, min, max);
@@ -42,60 +42,29 @@ void test(size_t nsize, size_t wsize, char *name, double min, double max, double
 		vals_out[i] = op(vals_a[i], vals_b[i]);
 	}
 
-    printf(".global %s_a\n", name);
-    printf(".balign 64\n");
-    printf("%s_a:\n", name);
-	for (size_t i = 0; i < COUNT / (4 / wsize); i ++) {
-		printf("    .word 0x");
-		for (int j = 4 / wsize - 1; j >= 0; j --) {
-            printf("%0*X", wsize * 2, vals_a[i * (4 / wsize) + j]);
-		}
-		printf("\n");
-	}
-
-	printf(".global %s_b\n", name);
-    printf(".balign 64\n");
-    printf("%s_b:\n", name);
-	for (size_t i = 0; i < COUNT / (4 / wsize); i ++) {
-		printf("    .word 0x");
-		for (int j = 4 / wsize - 1; j >= 0; j --) {
-            printf("%0*X", wsize * 2, vals_b[i * (4 / wsize) + j]);
-		}
-		printf("\n");
-	}
-
-    printf(".global %s_out\n", name);
-    printf(".balign 64\n");
-    printf("%s_out:\n", name);
-	for (size_t i = 0; i < COUNT / (4 / nsize); i ++) {
-		printf("    .word 0x");
-		for (int j = 4 / nsize - 1; j >= 0; j --) {
-			printf("%0*X", nsize * 2, vals_out[i * (4 / nsize) + j]);
-		}
-		printf("\n");
-	}
+	print_array(name, "_a", vals_a, isize, COUNT);
+	print_array(name, "_b", vals_b, isize, COUNT);
+	print_array(name, "_out", vals_out, osize, COUNT);
 }
 
-#define TESTS_FMA_BINARY(nsize, wsize, name, min, max, sn_min, sn_max, gen, ops_name) \
-	test(nsize, nsize, name "_mul", min, max, sn_min, sn_max, gen, ops_name ## _mul); \
-	test(nsize, nsize, name "_add", min, max, sn_min, sn_max, gen, ops_name ## _add); \
-	test(nsize, nsize, name "_sub", min, max, sn_min, sn_max, gen, ops_name ## _sub); \
-	test(wsize, nsize, name "_wmul", min, max, sn_min, sn_max, gen, ops_name ## _wmul); \
-	test(wsize, nsize, name "_wadd", min, max, sn_min, sn_max, gen, ops_name ## _wadd); \
-	test(wsize, nsize, name "_wsub", min, max, sn_min, sn_max, gen, ops_name ## _wsub);
+#define TESTS_FMA_BINARY(size, wsize, name, min, max, sn_min, sn_max, gen, ops_name) \
+	test(size, size, name "_mul", min, max, sn_min, sn_max, gen, ops_name ## _mul); \
+	test(size, size, name "_add", min, max, sn_min, sn_max, gen, ops_name ## _add); \
+	test(size, size, name "_sub", min, max, sn_min, sn_max, gen, ops_name ## _sub); \
+	test(size, wsize, name "_wmul", min, max, sn_min, sn_max, gen, ops_name ## _wmul); \
+	test(size, wsize, name "_wadd", min, max, sn_min, sn_max, gen, ops_name ## _wadd); \
+	test(size, wsize, name "_wsub", min, max, sn_min, sn_max, gen, ops_name ## _wsub);
 
 int main() {
 
-	printf(".section .data,\"aw\",@progbits\n");
+	print_header();
 
-    printf(".global N\n");
-    printf(".balign 8\n");
-    printf("N:\n");
-    printf("    .word 0x%0*X\n", 8, COUNT);
-    printf("    .word 0x00000000\n");
+    print_uint32("N", COUNT);
 
 	TESTS_FMA_BINARY(2, 4, "fp16", -1e2, 1e2, -1e-6, 1e-6, gen_fp16, fp16)
 	TESTS_FMA_BINARY(2, 4, "bf16", -1e15, 1e15, -2e-38, 2e-38, gen_bf16, bf16)
+	TESTS_FMA_BINARY(1, 2, "e5m2", -1e2, 1e2, -1e-4, 1e-4, gen_e5m2, e5m2)
+	TESTS_FMA_BINARY(1, 2, "e4m3", -3e1, 3e1, -1e-1, 1e-1, gen_e4m3, e4m3)
 
 	/*
 	Section from old tests for reference for decent min/max values

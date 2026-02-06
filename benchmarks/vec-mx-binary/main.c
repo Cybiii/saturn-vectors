@@ -76,6 +76,8 @@ size_t vl;
 
 TEST_DATA_BINARY_FMA(uint16_t, fp16, uint32_t)
 TEST_DATA_BINARY_FMA(uint16_t, bf16, uint32_t)
+TEST_DATA_BINARY_FMA(uint8_t, e4m3, uint16_t)
+TEST_DATA_BINARY_FMA(uint8_t, e5m2, uint16_t)
 
 #define TEST_BINARY_FMA(name, sew, wsew, ealt, vle, wvle, ops_name) \
 	TEST(name ## _mul, sew, sew, sew, ealt, vle, vle, LMUL_M1, LMUL_M1, asm volatile("vfmul.vv v24, v0, v4")) \
@@ -89,6 +91,8 @@ int main() {
 	
 	TEST_BINARY_FMA(fp16, SEW_E16, SEW_E32, 0, "vle16.v", "vle32.v", fp16)
 	TEST_BINARY_FMA(bf16, SEW_E16, SEW_E32, 1, "vle16.v", "vle32.v", bf16)
+	TEST_BINARY_FMA(e4m3, SEW_E8, SEW_E16, 0, "vle8.v", "vle16.v", e4m3)
+	TEST_BINARY_FMA(e5m2, SEW_E8, SEW_E16, 1, "vle8.v", "vle16.v", e5m2)
 
 	printf("All tests passed\n");
 

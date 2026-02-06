@@ -1,0 +1,246 @@
+.section .data,"aw",@progbits
+.global M
+.balign 64
+M:
+    .word 0x00000008
+    .word 0x00000000
+.global N
+.balign 64
+N:
+    .word 0x00000008
+    .word 0x00000000
+.global K
+.balign 64
+K:
+    .word 0x00000008
+    .word 0x00000000
+.global e4m3_a
+.balign 64
+e4m3_a:
+    .word 0x454B2A53
+    .word 0x4FD9D7CF
+    .word 0xCBDD5AD2
+    .word 0xDC5ED35B
+    .word 0x2E5DDC5C
+    .word 0x4654D25B
+    .word 0xDC5BDED0
+    .word 0x4DC8C45B
+    .word 0xC7CD525D
+    .word 0xD45E5D51
+    .word 0x59D2584C
+    .word 0x5E5BDD5D
+    .word 0xC25B435C
+    .word 0xD95A5B59
+    .word 0xC1D850DC
+    .word 0x5EC950DF
+.global e4m3_b
+.balign 64
+e4m3_b:
+    .word 0x5BD65ED9
+    .word 0xD3D5544A
+    .word 0xC6525B51
+    .word 0xDC4B58DD
+    .word 0x5D525ED4
+    .word 0x4ECF545B
+    .word 0xD6C6DB5B
+    .word 0x52482CD9
+    .word 0x4744DD4F
+    .word 0xD54CDC41
+    .word 0xD35E56D1
+    .word 0x5EBD46CF
+    .word 0xD2CFD150
+    .word 0x4C4B56DF
+    .word 0x5FDFD45B
+    .word 0xDF5D5A40
+.global e4m3_c
+.balign 64
+e4m3_c:
+    .word 0x43E3C2B0
+    .word 0x445CC420
+    .word 0x4366443E
+    .word 0xC432C2BA
+    .word 0xC48E4400
+    .word 0xC4D343B8
+    .word 0xC440C4E0
+    .word 0xC39C42B0
+    .word 0x4000C403
+    .word 0x44B6C436
+    .word 0xC2DC4486
+    .word 0xC2CAC3A8
+    .word 0xC3B0C415
+    .word 0x4494C23C
+    .word 0xC43C44E2
+    .word 0x42A6C1E0
+    .word 0x445AC413
+    .word 0xC3EC4414
+    .word 0x43D2C49B
+    .word 0x4405C3C6
+    .word 0xC4D944DE
+    .word 0x440EC4DA
+    .word 0x43B8C4A0
+    .word 0xC5044496
+    .word 0x449FC480
+    .word 0x434C4476
+    .word 0x4320C338
+    .word 0x4452C43D
+    .word 0xC3964469
+    .word 0xC380C3CC
+    .word 0x445FC410
+    .word 0xC39E4475
+.global e4m3_at
+.balign 64
+e4m3_at:
+    .word 0x454B2A53
+    .word 0x4FD9D7CF
+    .word 0xCBDD5AD2
+    .word 0xDC5ED35B
+    .word 0x2E5DDC5C
+    .word 0x4654D25B
+    .word 0xDC5BDED0
+    .word 0x4DC8C45B
+    .word 0xC7CD525D
+    .word 0xD45E5D51
+    .word 0x59D2584C
+    .word 0x5E5BDD5D
+    .word 0xC25B435C
+    .word 0xD95A5B59
+    .word 0xC1D850DC
+    .word 0x5EC950DF
+.global e4m3_bt
+.balign 64
+e4m3_bt:
+    .word 0x5BD65ED9
+    .word 0xD3D5544A
+    .word 0xC6525B51
+    .word 0xDC4B58DD
+    .word 0x5D525ED4
+    .word 0x4ECF545B
+    .word 0xD6C6DB5B
+    .word 0x52482CD9
+    .word 0x4744DD4F
+    .word 0xD54CDC41
+    .word 0xD35E56D1
+    .word 0x5EBD46CF
+    .word 0xD2CFD150
+    .word 0x4C4B56DF
+    .word 0x5FDFD45B
+    .word 0xDF5D5A40
+.global e4m3_out
+.balign 64
+e4m3_out:
+    .space 128
+.global e5m2_a
+.balign 64
+e5m2_a:
+    .word 0x55D152C9
+    .word 0x55D5D0D5
+    .word 0x46D25555
+    .word 0x56CDD256
+    .word 0x51D55155
+    .word 0x56D2D255
+    .word 0x5555CBD5
+    .word 0x53CE55D5
+    .word 0x55D6D0D5
+    .word 0xD2D5D34E
+    .word 0xD34D44D4
+    .word 0xD447564E
+    .word 0x44D15454
+    .word 0xD6D1CFD6
+    .word 0xD2555552
+    .word 0x53D2D5C5
+.global e5m2_b
+.balign 64
+e5m2_b:
+    .word 0x5449D454
+    .word 0x49D255D4
+    .word 0x55D654C2
+    .word 0xD052D5D6
+    .word 0xD4D05652
+    .word 0x4AD54F56
+    .word 0x554DD5D4
+    .word 0x48CAD4CC
+    .word 0xD5C7564A
+    .word 0xD5D549D1
+    .word 0x44D3D6CE
+    .word 0xD3D156D0
+    .word 0xD655D24B
+    .word 0xD14BD1CE
+    .word 0x56D340C9
+    .word 0x4642D642
+.global e5m2_c
+.balign 64
+e5m2_c:
+    .word 0xC5DFC61A
+    .word 0x4704C622
+    .word 0xC696C529
+    .word 0x46224638
+    .word 0x461A454A
+    .word 0x4690C61F
+    .word 0xC658C695
+    .word 0xC5B9C4F8
+    .word 0x44A8C468
+    .word 0x46BAC5D4
+    .word 0xC646C689
+    .word 0xC512C458
+    .word 0xC606C61E
+    .word 0x4613C613
+    .word 0xC5B2465F
+    .word 0x458CC491
+    .word 0xC48CC656
+    .word 0x45B445C2
+    .word 0xC60C4398
+    .word 0x457045FC
+    .word 0x4553C450
+    .word 0xC68CC582
+    .word 0x465C4506
+    .word 0xC60BC55C
+    .word 0xC60C44CE
+    .word 0x465E4380
+    .word 0x45B5C608
+    .word 0x4603462C
+    .word 0x46B54621
+    .word 0x4625C64D
+    .word 0xC60444DD
+    .word 0x45B0C495
+.global e5m2_at
+.balign 64
+e5m2_at:
+    .word 0x55D152C9
+    .word 0x55D5D0D5
+    .word 0x46D25555
+    .word 0x56CDD256
+    .word 0x51D55155
+    .word 0x56D2D255
+    .word 0x5555CBD5
+    .word 0x53CE55D5
+    .word 0x55D6D0D5
+    .word 0xD2D5D34E
+    .word 0xD34D44D4
+    .word 0xD447564E
+    .word 0x44D15454
+    .word 0xD6D1CFD6
+    .word 0xD2555552
+    .word 0x53D2D5C5
+.global e5m2_bt
+.balign 64
+e5m2_bt:
+    .word 0x5449D454
+    .word 0x49D255D4
+    .word 0x55D654C2
+    .word 0xD052D5D6
+    .word 0xD4D05652
+    .word 0x4AD54F56
+    .word 0x554DD5D4
+    .word 0x48CAD4CC
+    .word 0xD5C7564A
+    .word 0xD5D549D1
+    .word 0x44D3D6CE
+    .word 0xD3D156D0
+    .word 0xD655D24B
+    .word 0xD14BD1CE
+    .word 0x56D340C9
+    .word 0x4642D642
+.global e5m2_out
+.balign 64
+e5m2_out:
+    .space 128
