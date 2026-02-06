@@ -42,9 +42,9 @@ void test(char *name, size_t isize, size_t osize, int m, int n, int k, double mi
     print_scratchpad(name, "_out", m * n * osize);
 }
 
-#define M 8
-#define N 8
-#define K 8
+#define M 32
+#define N 32
+#define K 32
 
 int main() {
 
