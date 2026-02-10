@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../common/rvv_mx.h"
+#include "rvv_mx.h"
+#include "bme.h"
 
 extern const size_t N;
 extern uint8_t a[] __attribute__((aligned(64)));
@@ -30,7 +31,7 @@ void matmul_opu() {
             for (int k = 0; k < N; k ++) {
                 asm volatile("vle8.v v0, (%0)" :: "r"(a + i + k * N));
                 asm volatile("vle8.v v1, (%0)" :: "r"(b + j + k * N));
-                OPMACC("x1", "x1", "x0");
+                OPFMACC("x1", "x1", "x0");
             }
             VSETVLI_ALTFMT_X0(vl, SEW_E32, LMUL_M4, 0);
             for (int l = 0; l < vl; l ++) {

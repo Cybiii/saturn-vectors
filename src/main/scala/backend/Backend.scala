@@ -378,18 +378,27 @@ class VectorBackend(implicit p: Parameters) extends CoreModule()(p) with HasVect
           Vec(vopu.xDim, Vec(vopu.clusterXdim, UInt(opuParams.bWidth.W)))
         )
       }
-
-      when (vos.get.io.iss.bits.macc.head) {
-        vopu_ctrl_reg.in_l := vrf.io.vxs(flat_vxs.size).rvs1.resp.asTypeOf(
+      when (vos.get.io.iss.bits.mvin_col.orR || vos.get.io.iss.bits.mvin_bcast_col.head) {
+        vopu_ctrl_reg.in_l := vrf.io.vxs(flat_vxs.size).rvs2.resp.asTypeOf(
           Vec(vopu.yDim, Vec(vopu.clusterYdim, UInt(opuParams.aWidth.W)))
         )
+      }
 
-        val elems = vrf.io.vxs(flat_vxs.size).rvs2.resp.asTypeOf(
+      when (vos.get.io.iss.bits.macc.head) {
+        val elems_l = vrf.io.vxs(flat_vxs.size).rvs1.resp.asTypeOf(
+          Vec(vopu.yDim * vopu.clusterYdim, UInt(opuParams.aWidth.W))
+        )
+        val elems_t = vrf.io.vxs(flat_vxs.size).rvs2.resp.asTypeOf(
           Vec(vopu.xDim * vopu.clusterXdim, UInt(opuParams.bWidth.W))
         )
+        for (i <- 0 until vopu.yDim) {
+          for (j <- 0 until vopu.clusterYdim) {
+            vopu_ctrl_reg.in_l(i)(j) := elems_l(i + j * vopu.yDim)
+          }
+        }
         for (i <- 0 until vopu.xDim) {
           for (j <- 0 until vopu.clusterXdim) {
-            vopu_ctrl_reg.in_t(i)(j) := elems(i + j * vopu.xDim)
+            vopu_ctrl_reg.in_t(i)(j) := elems_t(i + j * vopu.xDim)
           }
         }
       }
@@ -408,9 +417,9 @@ class VectorBackend(implicit p: Parameters) extends CoreModule()(p) with HasVect
     vbdot.io.op.bits := vbs.get.io.iss.bits
     vbdot.io.rvs1_data := vrf.io.vxs(vbs_index).rvs1.resp
     vbdot.io.rvs2_data := vrf.io.vxs(vbs_index).rvs2.resp
-    vrf.io.batch_read_vs2 := vbs.get.io.batch_read_vs2
-    vrf.io.batch_vs2_eg := vbs.get.io.rvs2.bits.eg
-    vbdot.io.batch_vs2_data := vrf.io.batch_vs2_data
+    vrf.io.batch_read_vs2.get := vbs.get.io.batch_read_vs2
+    vrf.io.batch_vs2_eg.get := vbs.get.io.rvs2.bits.eg
+    vbdot.io.batch_vs2_data := vrf.io.batch_vs2_data.get
     vbdot.io.rvd_data := vrf.io.vxs(vbs_index).rvd.resp
     vbdot.io.rvm_data := vrf.io.vxs(vbs_index).rvm.resp
   }

@@ -3,10 +3,10 @@
 #define m1 "x1"
 #define m2 "x2"
 #define m3 "x3"
-#define m4 "x4"
-#define m5 "x5"
-#define m6 "x6"
-#define m7 "x7"
+#define mc0 "x16"
+#define mc1 "x17"
+#define mc2 "x18"
+#define mc3 "x19"
 
 #define v0 "x0"
 #define v1 "x1"
@@ -56,3 +56,8 @@
 // opmvv. f6=b101000, f7=b1010001
 #define VOPACC(md, vs2, vs1) \
   asm volatile(".insn r 0x57, 0x2, 0x51, " md ", " vs1 ", " vs2);
+
+// opfvv. f6=b100101, f7=b1001011
+#define OPFMACC(md, vs2, vs1) \
+  asm volatile(".insn r 0x57, 0x1, 0x4b, " md ", " vs1 ", " vs2);
+  

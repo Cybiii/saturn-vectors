@@ -52,8 +52,8 @@ class RegisterFileBank(reads: Int, maskReads: Int, rows: Int, maskRows: Int)(imp
   val io = IO(new Bundle {
     val read = Vec(reads, Flipped(new VectorReadIO))
     val mask_read = Vec(maskReads, Flipped(new VectorReadIO))
-    val batch_read_vs2 = Input(Bool())
-    val batch_vs2_eg = Input(UInt(log2Ceil(egsTotal).W))
+    val batch_read_vs2 = if (useBDot) Some(Input(Bool())) else None
+    val batch_vs2_eg = if (useBDot) Some(Input(UInt(log2Ceil(egsTotal).W))) else None
     val write = Input(Valid(new VectorWrite(dLen)))
     val ll_write = Flipped(Decoupled(new VectorWrite(dLen)))
   })
@@ -65,8 +65,14 @@ class RegisterFileBank(reads: Int, maskReads: Int, rows: Int, maskRows: Int)(imp
   io.read.zipWithIndex.foreach { case (read, i) =>
     read.req.ready := !(ll_write_valid && read.req.bits.eg === ll_write_bits.eg)
     read.resp := DontCare
-    when (read.req.valid || ((i == 1).B && io.batch_read_vs2)) {
-      read.resp := vrf.read(Mux((i == 1).B && io.batch_read_vs2, io.batch_vs2_eg, read.req.bits.eg)).asUInt
+    if (useBDot) {
+      when (read.req.valid || ((i == 1).B && io.batch_read_vs2.get)) {
+        read.resp := vrf.read(Mux((i == 1).B && io.batch_read_vs2.get, io.batch_vs2_eg.get, read.req.bits.eg)).asUInt
+      }
+    } else {
+      when (read.req.valid) {
+        read.resp := vrf.read(read.req.bits.eg).asUInt
+      }
     }
   }
   for (mask_read <- io.mask_read) {
@@ -126,9 +132,9 @@ class RegisterFile(reads: Seq[Int], maskReads: Seq[Int], pipeWrites: Int, llWrit
 
   val io = IO(new Bundle {
     val read = MixedVec(reads.map(rc => Vec(rc, Flipped(new VectorReadIO))))
-    val batch_read_vs2 = Input(Bool())
-    val batch_vs2_eg = Input(UInt(log2Ceil(egsTotal).W))
-    val batch_vs2_data = Output(Vec(nBanks, UInt(dLen.W)))
+    val batch_read_vs2 = if (useBDot) Some(Input(Bool())) else None
+    val batch_vs2_eg = if (useBDot) Some(Input(UInt(log2Ceil(egsTotal).W))) else None
+    val batch_vs2_data = if (useBDot) Some(Output(Vec(nBanks, UInt(dLen.W)))) else None
     val mask_read = MixedVec(maskReads.map(rc => Vec(rc, Flipped(new VectorReadIO))))
     val pipe_write_reqs = Vec(pipeWrites, Flipped(new VectorPipeWriteReqIO(maxDepth)))
 
@@ -155,9 +161,11 @@ class RegisterFile(reads: Seq[Int], maskReads: Seq[Int], pipeWrites: Int, llWrit
   }
 
   vrf.zipWithIndex.foreach { case (bank, i) =>
-    bank.io.batch_read_vs2 := io.batch_read_vs2
-    bank.io.batch_vs2_eg := io.batch_vs2_eg(log2Ceil(egsTotal)-1,log2Ceil(nBanks)+1) ## io.batch_vs2_eg(0)
-    io.batch_vs2_data(i) := bank.io.read(1).resp
+    if (useBDot) {
+      bank.io.batch_read_vs2.get := io.batch_read_vs2.get
+      bank.io.batch_vs2_eg.get := io.batch_vs2_eg.get(log2Ceil(egsTotal)-1,log2Ceil(nBanks)+1) ## io.batch_vs2_eg.get(0)
+      io.batch_vs2_data.get(i) := bank.io.read(1).resp
+    }
   }
 
   io.ll_writes.foreach(_.ready := false.B)

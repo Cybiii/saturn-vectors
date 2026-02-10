@@ -64,35 +64,11 @@
 #define OPMACC(md, vs2, vs1) \
   asm volatile(".insn r 0x57, 0x2, 0x51, " md ", " vs1 ", " vs2);
 
+// opfvv. f6=b100101, f7=b1001011
+#define OPFMACC(md, vs2, vs1) \
+  asm volatile(".insn r 0x57, 0x1, 0x4b, " md ", " vs1 ", " vs2);
 
-void i32_init(int32_t* d, size_t s) {
-  for (size_t i = 0; i < s; i++) d[i] = i + 1;
-}
-
-void i8_init(int8_t* d, size_t s) {
-  for (size_t i = 0; i < s; i++) d[i] = i + 1;
-}
-
-int i32_compare(int32_t* a, int32_t* b, size_t s) {
-  for (size_t i = 0; i < s; i++) {
-    if (a[i] != b[i]) {
-      printf("Divergence %d != %d index %ld\n", a[i], b[i], i);
-      return 1;
-    }
-  }
-  return 0;
-}
-
-void mm_scalar(int8_t* A, int8_t* B, int32_t* C, size_t M, size_t N, size_t K) {
-  for (size_t m = 0; m < M; m++) {
-    for (size_t n = 0; n < N; n++) {
-      for (size_t k = 0; k < K; k++) {
-        C[m*N+n] += A[M*k+m] * B[N*k+n];
-      }
-    }
-  }
-}
-
+  
 void mm_opu(int8_t* A, int8_t* B, int32_t* C, size_t M, size_t N, size_t K) {
   size_t maxvl;
   size_t vl;
@@ -120,7 +96,7 @@ void mm_opu(int8_t* A, int8_t* B, int32_t* C, size_t M, size_t N, size_t K) {
         asm volatile("vle8.v v1, (%0)" : : "r"(&B[N*k+j]));
         asm volatile("vsetvli x0, %[avl], e8, m1, ta, ma" : : [avl]"r"(M-i));
         asm volatile("vle8.v v0, (%0)" : : "r"(&A[M*k+i]));
-        OPMACC(m1, v1, v0);
+        OPFMACC(m1, v1, v0);
       }
 
       // move row of c-tile to v-reg, accmulate wth c-row from memory, store back out

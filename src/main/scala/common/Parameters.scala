@@ -27,13 +27,11 @@ object VectorParams {
     vxissqEntries = 3,
     vpissqEntries = 1,
     vatSz = 5,
+    vrfBanking = 4,
     useSegmentedIMul = true,
     doubleBufferSegments = true,
     useScalarFPFMA = false,
     useSegmentedFPFMA = true,
-    vrfBanking = 8,
-    useOpu = true,
-    useBDot = true,
     useMxFPFMA = true,
     useMxConversion = true,
     issStructure = VectorIssueStructure.Shared
@@ -56,11 +54,15 @@ object VectorParams {
     vsiqEntries = 6
   )
 
+  def bdotParams = genParams.copy(
+    vrfBanking = 8,
+    useBDot = true
+  )
+
   def opuParams = genParams.copy(
     vliqEntries = 8, // beef this up since OPU tends to be used with LMUL=1
     vlissqEntries = 6,
     useOpu = true,
-    useElementwiseFP64 = false,
     useMxFPFMA = true,
     useMxConversion = true
   )
@@ -382,6 +384,7 @@ case class VectorParams(
 ) {
   def opuInsns = Seq(
     saturn.insns.OPMACC.VV,
+    saturn.insns.OPFMACC.VV,
     saturn.insns.OPMVIN.VX,
     saturn.insns.OPMVINBCAST.VX,
     saturn.insns.OPMVOUT.VX)
@@ -427,7 +430,7 @@ trait HasVectorParams extends HasVectorConsts { this: HasCoreParameters =>
   def useOpu = vParams.useOpu
   def useBDot = vParams.useBDot
 
-  def opuParams = OPUParameters(8, 8, 32, 33, 2)
+  def opuParams = OPUParameters()
 
   def dmemTagBits = log2Ceil(vParams.vlifqEntries.max(vParams.vsifqEntries))
   def sgmemTagBits = log2Ceil(vParams.vsgifqEntries)
