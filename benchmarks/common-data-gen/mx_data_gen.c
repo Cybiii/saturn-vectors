@@ -2,39 +2,39 @@
 #include "mx_data_gen.h"
 #include "rvv_mx.h"
 
-uint64_t random_float(double min, double max) {
+fp_t random_float(double min, double max) {
     double val = min + (max - min) * ((double) rand() / (double) RAND_MAX);
-    return *(uint64_t *) &val;
+    return *(fp_t *) &val;
 }
 
 // Narrowing conversion
 
-uint64_t fp64_to_fp32(uint64_t a) {
-    uint64_t res;
+fp_t fp64_to_fp32(fp_t a) {
+    fp_t res;
 	asm volatile("fmv.d.x f0, %0" :: "r"(a));
 	asm volatile("fcvt.s.d f1, f0");
 	asm volatile("fmv.x.s %0, f1" : "=r"(res));
 	return res & 0xFFFFFFFF;
 }
 
-uint64_t fp32_to_fp16(uint64_t a) {
-	uint64_t res;
+fp_t fp32_to_fp16(fp_t a) {
+	fp_t res;
 	asm volatile("fmv.s.x f0, %0" :: "r"(a));
 	asm volatile("fcvt.h.s f1, f0");
 	asm volatile("fmv.x.h %0, f1" : "=r"(res));
 	return res & 0xFFFF;
 }
 
-uint64_t fp32_to_bf16(uint64_t a) {
-	uint64_t res;
+fp_t fp32_to_bf16(fp_t a) {
+	fp_t res;
 	asm volatile("fmv.s.x f0, %0" :: "r"(a));
     FCVT_BF16_S(F1, F0);
 	asm volatile("fmv.x.h %0, f1" : "=r"(res));
 	return res & 0xFFFF;
 }
 
-uint64_t bf16_to_e4m3(uint64_t a) {
-    uint64_t res;
+fp_t bf16_to_e4m3(fp_t a) {
+    fp_t res;
     VSETVLI_ALTFMT_X0(1, SEW_E16, LMUL_M1, 0);
     asm volatile("vmv.s.x v0, %0" :: "r"(a));
     VSETVLI_ALTFMT_X0(1, SEW_E8, LMUL_M1, 0);
@@ -43,8 +43,8 @@ uint64_t bf16_to_e4m3(uint64_t a) {
     return res & 0xFF;
 }
 
-uint64_t bf16_to_e5m2(uint64_t a) {
-    uint64_t res;
+fp_t bf16_to_e5m2(fp_t a) {
+    fp_t res;
     VSETVLI_ALTFMT_X0(1, SEW_E16, LMUL_M1, 0);
     asm volatile("vmv.s.x v0, %0" :: "r"(a));
     VSETVLI_ALTFMT_X0(1, SEW_E8, LMUL_M1, 1);
@@ -53,8 +53,8 @@ uint64_t bf16_to_e5m2(uint64_t a) {
     return res & 0xFF;
 }
 
-uint64_t bf16_to_e4m3_sat(uint64_t a) {
-    uint64_t res;
+fp_t bf16_to_e4m3_sat(fp_t a) {
+    fp_t res;
     VSETVLI_ALTFMT_X0(1, SEW_E16, LMUL_M1, 0);
     asm volatile("vmv.s.x v0, %0" :: "r"(a));
     VSETVLI_ALTFMT_X0(1, SEW_E8, LMUL_M1, 0);
@@ -63,8 +63,8 @@ uint64_t bf16_to_e4m3_sat(uint64_t a) {
     return res & 0xFF;
 }
 
-uint64_t bf16_to_e5m2_sat(uint64_t a) {
-    uint64_t res;
+fp_t bf16_to_e5m2_sat(fp_t a) {
+    fp_t res;
     VSETVLI_ALTFMT_X0(1, SEW_E16, LMUL_M1, 0);
     asm volatile("vmv.s.x v0, %0" :: "r"(a));
     VSETVLI_ALTFMT_X0(1, SEW_E8, LMUL_M1, 1);
@@ -75,24 +75,24 @@ uint64_t bf16_to_e5m2_sat(uint64_t a) {
 
 // Widening conversion
 
-uint64_t fp16_to_fp32(uint64_t a) {
-	uint64_t res;
+fp_t fp16_to_fp32(fp_t a) {
+	fp_t res;
 	asm volatile("fmv.h.x f0, %0" :: "r"(a));
 	asm volatile("fcvt.s.h f1, f0");
 	asm volatile("fmv.x.s %0, f1" : "=r"(res));
 	return res & 0xFFFFFFFF;
 }
 
-uint64_t bf16_to_fp32(uint64_t a) {
-	uint64_t res;
+fp_t bf16_to_fp32(fp_t a) {
+	fp_t res;
 	asm volatile("fmv.h.x f0, %0" :: "r"(a));
     FCVT_S_BF16(F1, F0);
 	asm volatile("fmv.x.s %0, f1" : "=r"(res));
 	return res & 0xFFFFFFFF;
 }
 
-uint64_t e4m3_to_bf16(uint64_t a) {
-    uint64_t res;
+fp_t e4m3_to_bf16(fp_t a) {
+    fp_t res;
     VSETVLI_ALTFMT_X0(1, SEW_E8, LMUL_M1, 0);
     asm volatile("vmv.s.x v0, %0" :: "r"(a));
     VFWCVTBF16_F_F_V(V8, V0);
@@ -101,8 +101,8 @@ uint64_t e4m3_to_bf16(uint64_t a) {
     return res & 0xFFFF;
 }
 
-uint64_t e5m2_to_bf16(uint64_t a) {
-    uint64_t res;
+fp_t e5m2_to_bf16(fp_t a) {
+    fp_t res;
     VSETVLI_ALTFMT_X0(1, SEW_E8, LMUL_M1, 1);
     asm volatile("vmv.s.x v0, %0" :: "r"(a));
     VFWCVTBF16_F_F_V(V8, V0);
@@ -114,8 +114,8 @@ uint64_t e5m2_to_bf16(uint64_t a) {
 // FMA Binary
 
 #define OP_BINARY(name, op, inst, isew, osew, esew, alt, mask) \
-    uint64_t name ## _ ## op(uint64_t a, uint64_t b) { \
-        uint64_t res; \
+    fp_t name ## _ ## op(fp_t a, fp_t b) { \
+        fp_t res; \
         VSETVLI_ALTFMT_X0(1, isew, LMUL_M1, 0); \
         asm volatile("vmv.s.x v0, %0" :: "r"(a)); \
         asm volatile("vmv.s.x v16, %0" :: "r"(b)); \
@@ -138,9 +138,47 @@ OPS_FMA_BINARY(fp32, SEW_E32, SEW_E64, 0, 0xFFFFFFFF, 0xFFFFFFFFFFFFFFFF)
 OPS_FMA_BINARY(fp16, SEW_E16, SEW_E32, 0, 0xFFFF, 0xFFFFFFFF)
 OPS_FMA_BINARY(bf16, SEW_E16, SEW_E32, 1, 0xFFFF, 0xFFFFFFFF)
 
+#define OP_BINARY_MX(name, op, wname) \
+    fp_t name ## _ ## op(fp_t a, fp_t b) { \
+        fp_t wide_a = name ## _to_ ## wname(a); \
+        fp_t wide_b = name ## _to_ ## wname(b); \
+        fp_t wide_res = wname ## _ ## op(wide_a, wide_b); \
+        return wname ## _to_ ## name(wide_res); \
+    }
+
+#define OP_BINARY_MX_WIDEN(name, op, wname) \
+    fp_t name ## _w ## op(fp_t a, fp_t b) { \
+        fp_t wide_a = name ## _to_ ## wname(a); \
+        fp_t wide_b = name ## _to_ ## wname(b); \
+        return wname ## _ ## op(wide_a, wide_b); \
+    }
+
+#define OPS_FMA_BINARY_MX(name, wname) \
+    OP_BINARY_MX(name, mul, wname) \
+    OP_BINARY_MX(name, add, wname) \
+    OP_BINARY_MX(name, sub, wname) \
+    OP_BINARY_MX_WIDEN(name, mul, wname) \
+    OP_BINARY_MX_WIDEN(name, add, wname) \
+    OP_BINARY_MX_WIDEN(name, sub, wname)
+
+OPS_FMA_BINARY_MX(e5m2, bf16)
+OPS_FMA_BINARY_MX(e4m3, bf16)
+
+// FMA Ternary
+
+fp_t e4m3_wmacc(fp_t a, fp_t b, fp_t c) {
+    fp_t prod = e4m3_wmul(a, b);
+    return bf16_add(prod, c);
+}
+
+fp_t e5m2_wmacc(fp_t a, fp_t b, fp_t c) {
+    fp_t prod = e5m2_wmul(a, b);
+    return bf16_add(prod, c);
+}
+
 // Generation
 
-uint64_t gen_fp32(GenMode mode, double min, double max) {
+fp_t gen_fp32(GenMode mode, double min, double max) {
     switch (mode) {
         case GM_INF:
             return 0x7f800000;
@@ -159,7 +197,7 @@ uint64_t gen_fp32(GenMode mode, double min, double max) {
     }
 }
 
-uint64_t gen_fp16(GenMode mode, double min, double max) {
+fp_t gen_fp16(GenMode mode, double min, double max) {
     switch (mode) {
         case GM_INF:
             return 0x7c00;
@@ -178,7 +216,7 @@ uint64_t gen_fp16(GenMode mode, double min, double max) {
     }
 }
 
-uint64_t gen_bf16(GenMode mode, double min, double max) {
+fp_t gen_bf16(GenMode mode, double min, double max) {
     switch (mode) {
         case GM_INF:
             return 0x7f80;
@@ -197,7 +235,7 @@ uint64_t gen_bf16(GenMode mode, double min, double max) {
     }
 }
 
-uint64_t gen_e4m3(GenMode mode, double min, double max) {
+fp_t gen_e4m3(GenMode mode, double min, double max) {
     switch (mode) {
         case GM_INF:
             return 0x7f;
@@ -216,7 +254,7 @@ uint64_t gen_e4m3(GenMode mode, double min, double max) {
     }
 }
 
-uint64_t gen_e5m2(GenMode mode, double min, double max) {
+fp_t gen_e5m2(GenMode mode, double min, double max) {
     switch (mode) {
         case GM_INF:
             return 0x7c;
@@ -232,5 +270,39 @@ uint64_t gen_e5m2(GenMode mode, double min, double max) {
             return 0x80;
         case GM_RAND:
             return bf16_to_e5m2(fp32_to_bf16(fp64_to_fp32(random_float(min, max))));
+    }
+}
+
+// Formatting
+
+void print_header() {
+    printf(".section .data,\"aw\",@progbits\n");
+}
+
+void print_scratchpad(char *name, char *suffix, size_t len) {
+    printf(".global %s%s\n", name, suffix);
+    printf(".balign 64\n");
+    printf("%s%s:\n", name, suffix);
+    printf("    .space %d\n", len);
+}
+
+void print_uint32(char *name, uint32_t value) {
+    printf(".global %s\n", name);
+    printf(".balign 64\n");
+    printf("%s:\n", name);
+    printf("    .word 0x%0*X\n", 8, value);
+    printf("    .word 0x00000000\n");
+}
+
+void print_array(char *name, char *suffix, fp_t *array, size_t esize, size_t n) {
+    printf(".global %s%s\n", name, suffix);
+    printf(".balign 64\n");
+    printf("%s%s:\n", name, suffix);
+    for (size_t i = 0; i < n / (4 / esize); i ++) {
+        printf("    .word 0x");
+        for (int j = 4 / esize - 1; j >= 0; j --) {
+            printf("%0*X", esize * 2, array[i * (4 / esize) + j]);
+        }
+        printf("\n");
     }
 }
