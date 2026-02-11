@@ -34,8 +34,8 @@ void mm_opu(int8_t* A, int8_t* B, float* C, size_t M, size_t N, size_t K) {
       for (size_t k = 0; k < K; k++) {
         asm volatile("vsetvli x0, %[avl], e8, m1, ta, ma" : : [avl]"r"(N-j));
         asm volatile("vle8.v v1, (%0)" : : "r"(&B[N*k+j]));
-        asm volatile("vsetvli x0, %[avl], e8, m1, ta, ma" : : [avl]"r"(M-i));
-        // VSETVLI_ALTFMT_X0(M-i, SEW_E8, LMUL_M1, 1);
+        // asm volatile("vsetvli x0, %[avl], e8, m1, ta, ma" : : [avl]"r"(M-i));
+        VSETVLI_ALTFMT_X0(M-i, SEW_E8, LMUL_M1, 1);
         asm volatile("vle8.v v0, (%0)" : : "r"(&A[M*k+i]));
         OPFMACC(m1, v1, v0);
       }
@@ -44,8 +44,6 @@ void mm_opu(int8_t* A, int8_t* B, float* C, size_t M, size_t N, size_t K) {
       asm volatile("vsetvli x0, %[avl], e32, m4, ta, ma" : : [avl]"r"(cols));
       for (size_t r = 0; r < rows; r++) {
         VMV_VR(v0, r, m1);
-        asm volatile("vle32.v v4, (%0)" : : "r"(&C[(i+r)*N+j]));
-        asm volatile("vadd.vv v0, v0, v4");
         asm volatile("vse32.v v0, (%0)" : : "r"(&C[(i+r)*N+j]));
       }
       j += cols;

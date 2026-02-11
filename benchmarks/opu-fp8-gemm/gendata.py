@@ -117,9 +117,9 @@ a_array_size = m_dim * k_dim
 b_array_size = k_dim * n_dim
 c_array_size = m_dim * n_dim
 
-maxmant = 1 << 2
-minexp = -5
-maxexp = 5
+maxmant = 2**3 - 1
+minexp = -6
+maxexp = 6
 
 # Generate floating-point values with exact mantissa and exponent
 randf = lambda n: np.ldexp(
