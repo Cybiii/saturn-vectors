@@ -11,7 +11,7 @@ void test(char *name, size_t isize, size_t osize, int m, int n, int k, double mi
     fp_t c_bf16[m][n];
     fp_t at[k][m];
     fp_t bt[n][k];
-    memset(c, 0, m * n * sizeof(fp_t));
+    memset(c_bf16, 0, m * n * sizeof(fp_t));
 
     for (size_t i = 0; i < m; i ++) {
         for (size_t j = 0; j < k; j ++) {
@@ -29,9 +29,9 @@ void test(char *name, size_t isize, size_t osize, int m, int n, int k, double mi
     for (size_t i = 0; i < m; i ++) {
         for (size_t j = 0; j < n; j ++) {
             for (size_t k0 = 0; k0 < k; k0 ++) {
-                c_bf16[i][j] = macc(a[i][k0], b[k0][j], c[i][j]);
-                c[i][j] = bf16_to_fp32(c_bf16[i][j]);
+                c_bf16[i][j] = macc(a[i][k0], b[k0][j], c_bf16[i][j]);
             }
+            c[i][j] = bf16_to_fp32(c_bf16[i][j]);
         }
     }
 
