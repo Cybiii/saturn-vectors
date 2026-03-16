@@ -56,6 +56,8 @@ int main() {
 
     test("e4m3", 1, 2, M, N, K, -3e1, 3e1, gen_e4m3, e4m3_wmacc);
     test("e5m2", 1, 2, M, N, K, -1e2, 1e2, gen_e5m2, e5m2_wmacc);
+    test("fp16", 2, 4, M, N, K, -1e2, 1e2, gen_fp16, fp16_wmacc);
+    test("bf16", 2, 4, M, N, K, -1e2, 1e2, gen_bf16, bf16_wmacc);
 
     return 0;
 }

@@ -66,14 +66,14 @@ size_t vl;
 #define CLEAR_OUT(name, osew) \
     memset(name ## _out, 0, M * N * osew);
 
-#define CHECK_TEST(name) \
+#define CHECK_TEST(name, otype) \
     for (size_t m = 0; m < M; m ++) { \
         for (size_t n = 0; n < N; n ++) { \
-            uint64_t expected = name ## _c[n + (m * N)]; \
-            uint64_t result = name ## _out[n + (m * N)]; \
+            otype expected = name ## _c[n + (m * N)]; \
+            otype result = name ## _out[n + (m * N)]; \
             if (expected != result) { \
                 printf("Test failed\n"); \
-                printf("m = %d, n = %d, exp = %x, res = %x\n", m, n, expected, result); \
+                printf("m = %zu, n = %zu, exp = %x, res = %x\n", m, n, (unsigned)expected, (unsigned)result); \
                 exit(1); \
             } \
         } \
@@ -81,13 +81,19 @@ size_t vl;
 
 TEST_DATA(uint8_t, e4m3, uint16_t)
 TEST_DATA(uint8_t, e5m2, uint16_t)
+TEST_DATA(uint16_t, fp16, uint32_t)
+TEST_DATA(uint16_t, bf16, uint32_t)
 
 int main() {
 
     TEST_VECTOR_OUTER(e4m3, SEW_E8, SEW_E16, 0, "vle8.v", "vse16.v")
-    CHECK_TEST(e4m3)
+    CHECK_TEST(e4m3, uint16_t)
     TEST_VECTOR_OUTER(e5m2, SEW_E8, SEW_E16, 1, "vle8.v", "vse16.v")
-    CHECK_TEST(e5m2)
+    CHECK_TEST(e5m2, uint16_t)
+    TEST_VECTOR_OUTER(fp16, SEW_E16, SEW_E32, 0, "vle16.v", "vse32.v")
+    CHECK_TEST(fp16, uint32_t)
+    TEST_VECTOR_OUTER(bf16, SEW_E16, SEW_E32, 1, "vle16.v", "vse32.v")
+    CHECK_TEST(bf16, uint32_t)
 
     printf("All tests passed\n");
 

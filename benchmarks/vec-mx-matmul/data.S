@@ -3124,3 +3124,51 @@ e5m2_bt:
 .balign 64
 e5m2_out:
     .space 2048
+.global fp16_a
+.balign 64
+fp16_a:
+    .space 2048
+.global fp16_b
+.balign 64
+fp16_b:
+    .space 2048
+.global fp16_c
+.balign 64
+fp16_c:
+    .space 4096
+.global fp16_at
+.balign 64
+fp16_at:
+    .space 2048
+.global fp16_bt
+.balign 64
+fp16_bt:
+    .space 2048
+.global fp16_out
+.balign 64
+fp16_out:
+    .space 4096
+.global bf16_a
+.balign 64
+bf16_a:
+    .space 2048
+.global bf16_b
+.balign 64
+bf16_b:
+    .space 2048
+.global bf16_c
+.balign 64
+bf16_c:
+    .space 4096
+.global bf16_at
+.balign 64
+bf16_at:
+    .space 2048
+.global bf16_bt
+.balign 64
+bf16_bt:
+    .space 2048
+.global bf16_out
+.balign 64
+bf16_out:
+    .space 4096
