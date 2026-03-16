@@ -37,10 +37,10 @@ class RegisterReadXbar(n: Int, banks: Int)(implicit p: Parameters) extends CoreM
   val bankOffset = log2Ceil(banks)
 
   for (i <- 0 until n) {
-    val bank_sel = if (bankOffset == 0) true.B else UIntToOH(io.in(i).req.bits.eg(bankOffset-1,0))
+    val bank_sel = if (bankOffset == 0) true.B else UIntToOH(io.in(i).req.bits.eg(bankOffset,1))
     for (j <- 0 until banks) {
       arbs(j).io.in(i).valid := io.in(i).req.valid && bank_sel(j)
-      arbs(j).io.in(i).bits.eg := io.in(i).req.bits.eg >> bankOffset
+      arbs(j).io.in(i).bits.eg := io.in(i).req.bits.eg(log2Ceil(egsTotal)-1,log2Ceil(banks)+1) ## io.in(i).req.bits.eg(0)
       arbs(j).io.in(i).bits.oldest := io.in(i).req.bits.oldest
     }
     io.in(i).req.ready := Mux1H(bank_sel, arbs.map(_.io.in(i).ready))
@@ -52,6 +52,8 @@ class RegisterFileBank(reads: Int, maskReads: Int, rows: Int, maskRows: Int)(imp
   val io = IO(new Bundle {
     val read = Vec(reads, Flipped(new VectorReadIO))
     val mask_read = Vec(maskReads, Flipped(new VectorReadIO))
+    val batch_read_vs2 = if (useBDot) Some(Input(Bool())) else None
+    val batch_vs2_eg = if (useBDot) Some(Input(UInt(log2Ceil(egsTotal).W))) else None
     val write = Input(Valid(new VectorWrite(dLen)))
     val ll_write = Flipped(Decoupled(new VectorWrite(dLen)))
   })
@@ -60,11 +62,17 @@ class RegisterFileBank(reads: Int, maskReads: Int, rows: Int, maskRows: Int)(imp
 
   val vrf = Mem(rows, Vec(dLen, Bool()))
   val v0_mask = Mem(maskRows, Vec(dLen, Bool()))
-  for (read <- io.read) {
+  io.read.zipWithIndex.foreach { case (read, i) =>
     read.req.ready := !(ll_write_valid && read.req.bits.eg === ll_write_bits.eg)
     read.resp := DontCare
-    when (read.req.valid) {
-      read.resp := vrf.read(read.req.bits.eg).asUInt
+    if (useBDot) {
+      when (read.req.valid || ((i == 1).B && io.batch_read_vs2.get)) {
+        read.resp := vrf.read(Mux((i == 1).B && io.batch_read_vs2.get, io.batch_vs2_eg.get, read.req.bits.eg)).asUInt
+      }
+    } else {
+      when (read.req.valid) {
+        read.resp := vrf.read(read.req.bits.eg).asUInt
+      }
     }
   }
   for (mask_read <- io.mask_read) {
@@ -119,11 +127,14 @@ class RegisterFileBank(reads: Int, maskReads: Int, rows: Int, maskRows: Int)(imp
 class RegisterFile(reads: Seq[Int], maskReads: Seq[Int], pipeWrites: Int, llWrites: Int, maxDepth: Int)(implicit p: Parameters) extends CoreModule()(p) with HasVectorParams {
 
   val nBanks = vParams.vrfBanking
-  // Support 1, 2, and 4 banks for the VRF
-  require(nBanks == 1 || nBanks == 2 || nBanks == 4)
+  // Support 1, 2, and 4 banks for the VRF (Is 8 safe?)
+  require(nBanks == 1 || nBanks == 2 || nBanks == 4 || nBanks == 8)
 
   val io = IO(new Bundle {
     val read = MixedVec(reads.map(rc => Vec(rc, Flipped(new VectorReadIO))))
+    val batch_read_vs2 = if (useBDot) Some(Input(Bool())) else None
+    val batch_vs2_eg = if (useBDot) Some(Input(UInt(log2Ceil(egsTotal).W))) else None
+    val batch_vs2_data = if (useBDot) Some(Output(Vec(nBanks, UInt(dLen.W)))) else None
     val mask_read = MixedVec(maskReads.map(rc => Vec(rc, Flipped(new VectorReadIO))))
     val pipe_write_reqs = Vec(pipeWrites, Flipped(new VectorPipeWriteReqIO(maxDepth)))
 
@@ -147,6 +158,14 @@ class RegisterFile(reads: Seq[Int], maskReads: Seq[Int], pipeWrites: Int, llWrit
       bank.io.mask_read(i) <> mask_xbar.io.out(j)
     }
     mask_xbar.io.in <> io.mask_read(i)
+  }
+
+  vrf.zipWithIndex.foreach { case (bank, i) =>
+    if (useBDot) {
+      bank.io.batch_read_vs2.get := io.batch_read_vs2.get
+      bank.io.batch_vs2_eg.get := io.batch_vs2_eg.get(log2Ceil(egsTotal)-1,log2Ceil(nBanks)+1) ## io.batch_vs2_eg.get(0)
+      io.batch_vs2_data.get(i) := bank.io.read(1).resp
+    }
   }
 
   io.ll_writes.foreach(_.ready := false.B)
@@ -184,7 +203,7 @@ class RegisterFile(reads: Seq[Int], maskReads: Seq[Int], pipeWrites: Int, llWrit
     rf.io.write.valid := bank_write_valid
     rf.io.write.bits.data := bank_write_data
     rf.io.write.bits.mask := bank_write_mask
-    rf.io.write.bits.eg := bank_write_eg >> vrfBankBits
+    rf.io.write.bits.eg := bank_write_eg(log2Ceil(egsTotal)-1,log2Ceil(nBanks)+1) ## bank_write_eg(0)
     when (bank_write_valid) { PopCount(bank_match) === 1.U }
 
     val ll_arb = Module(new Arbiter(new VectorWrite(dLen), llWrites))
@@ -192,7 +211,7 @@ class RegisterFile(reads: Seq[Int], maskReads: Seq[Int], pipeWrites: Int, llWrit
 
     io.ll_writes.zipWithIndex.foreach { case (w, j) =>
       ll_arb.io.in(j).valid := w.valid && w.bits.bankId === i.U
-      ll_arb.io.in(j).bits.eg   := w.bits.eg >> vrfBankBits
+      ll_arb.io.in(j).bits.eg   := w.bits.eg(log2Ceil(egsTotal)-1,log2Ceil(nBanks)+1) ## w.bits.eg(0)
       ll_arb.io.in(j).bits.data := w.bits.data
       ll_arb.io.in(j).bits.mask := w.bits.mask
       when (ll_arb.io.in(j).ready && w.bits.bankId === i.U) {

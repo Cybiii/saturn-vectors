@@ -80,6 +80,8 @@ class VectorIssueInst(implicit p: Parameters) extends CoreBundle()(p) with HasVe
   def writes_xrf = !vmu && ((funct3 === OPMVV && opmf6 === OPMFunct6.wrxunary0) || (funct3 === OPFVV && opff6 === OPFFunct6.wrfunary0))
   def writes_frf = !vmu && (funct3 === OPFVV)
   def sew = vconfig.vtype.vsew
+  def altfmt = vconfig.vtype.altfmt
+  def ext = bits(5)
 
   def isOpi = funct3.isOneOf(OPIVV, OPIVI, OPIVX)
   def isOpm = funct3.isOneOf(OPMVV, OPMVX)
@@ -123,7 +125,7 @@ class VectorPipeWriteReqIO(maxPipeDepth: Int)(implicit p: Parameters) extends Co
 
 class VectorWrite(writeBits: Int)(implicit p: Parameters) extends CoreBundle()(p) with HasVectorParams {
   val eg = UInt(log2Ceil(32 * vLen / writeBits).W)
-  def bankId = if (vrfBankBits == 0) 0.U else eg(vrfBankBits-1,0)
+  def bankId = if (vrfBankBits == 0) 0.U else eg(vrfBankBits,1)
   val data = UInt(writeBits.W)
   val mask = UInt(writeBits.W)
 }
@@ -177,6 +179,8 @@ class ExecuteMicroOp(nFUs: Int)(implicit p: Parameters) extends CoreBundle()(p) 
   val rvd_eew = UInt(2.W)
   val vd_eew  = UInt(2.W)
   val sew     = UInt(2.W)
+  val altfmt = Bool()
+  val ext = Bool()
 
   val scalar = UInt(64.W)
 

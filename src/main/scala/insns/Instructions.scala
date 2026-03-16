@@ -8,7 +8,7 @@ import freechips.rocketchip.subsystem._
 import freechips.rocketchip.rocket._
 import freechips.rocketchip.rocket.constants._
 import freechips.rocketchip.util._
-import saturn.common.{OPIFunct6, OPMFunct6, OPFFunct6, VectorConsts}
+import saturn.common.{OPIFunct6, OPMFunct6, OPFFunct6, OPMExtFunct6, VectorConsts}
 
 class OPIVVInstruction(base: OPIInstruction) extends VectorInstruction {
   val props = base.props ++ Seq(F3(VectorConsts.OPIVV), ReadsVS1.Y)
@@ -202,7 +202,7 @@ object FREDMAX   extends OPFInstruction    { val props = Seq(F6(OPFFunct6.fredma
 
 object FCVT_SGL  extends VectorInstruction { val props = Seq(F6(OPFFunct6.funary0), F3(VectorConsts.OPFVV), RS1(BitPat("b00???")), FPAdd.N, FPMul.N) }
 object FCVT_WID  extends VectorInstruction { val props = Seq(F6(OPFFunct6.funary0), F3(VectorConsts.OPFVV), RS1(BitPat("b01???")), Wide2VD.Y, FPAdd.N, FPMul.N) }
-object FCVT_NRW  extends VectorInstruction { val props = Seq(F6(OPFFunct6.funary0), F3(VectorConsts.OPFVV), RS1(BitPat("b10???")), Wide2VD.N, Wide2VS2.Y, FPAdd.N, FPMul.N) }
+object FCVT_NRW  extends VectorInstruction { val props = Seq(F6(OPFFunct6.funary0), F3(VectorConsts.OPFVV), RS1(BitPat("b1????")), Wide2VD.N, Wide2VS2.Y, FPAdd.N, FPMul.N) }
 
 object SLIDEUP     extends OPIInstruction    { val props = Seq(F6(OPIFunct6.slideup)    , UsesGatherUnit.Y, ReadsVS2.N, Slide.Y) }
 object SLIDEDOWN   extends OPIInstruction    { val props = Seq(F6(OPIFunct6.slidedown)  , UsesGatherUnit.Y, ReadsVS2.N, Slide.Y) }
@@ -232,3 +232,20 @@ object RORI       extends OPIInstruction    { val props = Seq(F6(OPIFunct6.rol) 
 object ROR        extends OPIInstruction    { val props = Seq(F6(OPIFunct6.ror)      , UsesShift.Y, ShiftsLeft.N, ScalingShift.N) }
 object WSLL       extends OPIInstruction    { val props = Seq(F6(OPIFunct6.wsll)     , UsesShift.Y, ShiftsLeft.Y, ScalingShift.N, Wide2VD.Y, ZextImm5.Y) }
 
+// Outer product instructions
+object OPFMACC     extends OPFInstruction    { val props = Seq(F6(OPFFunct6.opfmacc)    , ReadsVS1.Y, ReadsVS2.Y, WritesVD.N, OPFP8.Y) }
+object OPMACC      extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opmacc)     , ReadsVS1.Y, ReadsVS2.Y, WritesVD.N) }
+object OPMVIN      extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opmvin)     , ReadsVS1.N, ReadsVS2.Y, WritesVD.N) }
+object OPMVINBCAST extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opmvinbcast), ReadsVS1.N, ReadsVS2.Y, WritesVD.N) }
+object OPMVOUT     extends OPMInstruction    { val props = Seq(F6(OPMFunct6.opmvout)    , ReadsVS1.N, ReadsVS2.N, WritesVD.Y) }
+
+// Batched dot product instructions
+object DOTSET       extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotset) , EXT.Y, BDotSet.Y, BDotSetZero.N, BDotSetBC.N, RS1(BitPat("b???00"))) }
+object DOTSETZERO   extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotset) , EXT.Y, BDotSet.Y, BDotSetZero.Y, BDotSetBC.N, RS1(BitPat("b???01"))) }
+object DOTSETBC     extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotset) , EXT.Y, BDotSet.Y, BDotSetZero.N, BDotSetBC.Y, RS1(BitPat("b???10"))) }
+object DOTSETZEROBC extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotset) , EXT.Y, BDotSet.Y, BDotSetZero.Y, BDotSetBC.Y, RS1(BitPat("b???11"))) }
+object DOTWB        extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.dotwb)  , EXT.Y, BDotWB.Y, BDotSetZero.Y) }
+object QLDOTUA      extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.qldotua), EXT.Y, BDotSigned.N, BDotFP.N, BDotBatched.N, BDotWiden(2.U(2.W))) }
+object QLDOTSA      extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.qldotsa), EXT.Y, BDotSigned.Y, BDotFP.N, BDotBatched.N, BDotWiden(2.U(2.W))) }
+object QBDOTUA      extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.qbdotua), EXT.Y, BDotSigned.N, BDotFP.N, BDotBatched.Y, BDotWiden(2.U(2.W))) }
+object QBDOTSA      extends OPIInstruction   { val props = Seq(F6(OPMExtFunct6.qbdotsa), EXT.Y, BDotSigned.Y, BDotFP.N, BDotBatched.Y, BDotWiden(2.U(2.W))) }

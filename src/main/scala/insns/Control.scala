@@ -14,6 +14,7 @@ object F3            extends XDefaultInstructionField { override val width: Int 
 object RS1           extends XDefaultInstructionField { override val width: Int = 5 }
 object RS2           extends XDefaultInstructionField { override val width: Int = 5 }
 object SEW           extends XDefaultInstructionField { override val width: Int = 2 }
+object EXT           extends NDefaultInstructionField
 
 object AlwaysReadsVM     extends NDefaultInstructionField
 object VMBitReadsVM      extends YDefaultInstructionField
@@ -99,3 +100,16 @@ object FPMGT             extends XDefaultInstructionField
 
 object FPSgnj            extends NDefaultInstructionField
 object FPSpecRM          extends XDefaultInstructionField { override val width = 3 }
+
+// BDot control
+object BDotSet           extends NDefaultInstructionField
+object BDotWB            extends NDefaultInstructionField
+object BDotSetZero       extends XDefaultInstructionField
+object BDotSetBC         extends XDefaultInstructionField
+object BDotFP            extends XDefaultInstructionField
+object BDotSigned        extends XDefaultInstructionField
+object BDotBatched       extends XDefaultInstructionField
+object BDotWiden         extends XDefaultInstructionField { override val width = 2 }
+
+// OPU control
+object OPFP8             extends NDefaultInstructionField

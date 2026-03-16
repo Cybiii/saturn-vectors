@@ -31,11 +31,12 @@ class EarlyVectorDecode(supported_ex_insns: Seq[VectorInstruction])(implicit p: 
   val funct6 = io.inst(31,26)
   val rs1 = io.inst(19,15)
   val rs2 = io.inst(24,20)
+  val ext = io.inst(5)
 
   val v_load = opcode === opcLoad && !width.isOneOf(1.U, 2.U, 3.U, 4.U)
   val v_store = opcode === opcStore && !width.isOneOf(1.U, 2.U, 3.U, 4.U)
-  val v_arith_maybe = opcode === opcVector && funct3 =/= 7.U
-  val v_arith = v_arith_maybe && new VectorDecoder(rs1, rs2, funct3, funct6, io.vconfig.vtype.vsew, supported_ex_insns, Nil).matched
+  val v_arith_maybe = (opcode === opcVector || opcode === opcExtra) && funct3 =/= 7.U
+  val v_arith = v_arith_maybe && new VectorDecoder(rs1, rs2, funct3, funct6, io.vconfig.vtype.vsew, ext, supported_ex_insns, Nil).matched
 
   io.vector := v_load || v_store || v_arith_maybe
 
