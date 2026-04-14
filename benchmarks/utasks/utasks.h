@@ -229,6 +229,11 @@ public:
 
   bool idle() { return task_count.load() == 0; }
 
+  void step() {
+    task_t* t = schedule_task();
+    if (t) t->run();
+  }
+
   allocator_t* get_allocator() { return allocator; }
 
 private:
